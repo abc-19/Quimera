@@ -1,0 +1,22 @@
+
+	Quimera - whole idea
+
+	The idea is to implement a spreadsheet engine which will allow me to
+	learn several things about software develpment, this is a really hard
+	projects based on all the things it envolves...
+
+	It has to have a visual and real-time representation of the data just
+	like libreOffice-calc or Excel, for sure it is not meant to be a rival
+	for those SpreadSheet engines but i am really interested in this project.
+
+	I've already tried to implement this one year ago but it was impossible
+	to me, maybe this time it won't be, i do not really know how to start
+	but i gotta start somewhere.
+
+	The first thing i'd like to do is to parse the arguments given to the
+	program by using <getopt.h> since it makes it easier to do. I do not
+	know how to store all the information the program will work with...
+
+	I just reached the idea that the sheet is not the same as the document,
+	therefore a document can have multiple sheets on it, which is gonna
+	make this thing even harder.

@@ -11,19 +11,19 @@
 
 #include <stdio.h>
 
-#define	uint8_t		unsigned char
-#define	uint16_t	unsigned short
-#define	uint32_t	unsigned int
-#define	uint64_t	unsigned long
+#define	u8_t	unsigned char
+#define	u16_t	unsigned short
+#define	u32_t	unsigned int
+#define	u64_t	unsigned long
 
-#define	int8_t		signed char
-#define	int16_t		signed short
-#define	int32_t		signed int
-#define	int64_t		signed long
+#define	i8_t	signed char
+#define	i16_t	signed short
+#define	i32_t	signed int
+#define	i64_t	signed long
 
-#define	bool_t		unsigned char
-#define	True		1
-#define	False		0
+#define	bool_t	unsigned char
+#define	True	1
+#define	False	0
 
 #define	success_t	unsigned char
 #define	Succeed		1
@@ -31,14 +31,14 @@
 
 struct Sheet
 {
-	struct	Sheet *next, *prev;
 	char	*name;
 };
 
 struct Quimera
 {
-	struct	*currSheet;
+	struct	Sheet *currSheet;
 	char	*docName;
+	bool_t	readOnly;
 };
 
 #endif

@@ -7,6 +7,7 @@
  * `-....-'`------)))`=-'"`'"		Jan 01 2025
  */
 #include "quimera.h"
+#include "tui.h"
 
 #include <getopt.h>
 #include <stdlib.h>
@@ -22,7 +23,9 @@ int main (int argc, char **argv)
 	memset(&quim, 0, sizeof(quim));
 
 	parseArguments(argc, argv, &quim);
+	tui__drawLayout();
 
+	scanf("%d", &argc);
 	return 0;
 }
 
@@ -34,8 +37,8 @@ static void parseArguments (const int nargs, char **vargs, struct Quimera *const
 			case 's': quim->docName = optarg; break;
 			case 'R': quim->readOnly = True; break;
 			case 'u': printUsage(*vargs); break;
-			case ':': errx(1, "[args]: The `-%c` needs an additional argument.", optopt); break;
-			case '?': errx(1, "[args]: The '-%c' is not a quimera argument.", optopt); break;
+			case ':': errx(-1, "[args]: The `-%c` needs an additional argument.", optopt); break;
+			case '?': errx(-1, "[args]: The '-%c' is not a quimera argument.", optopt); break;
 		}
 	}
 }

@@ -20,3 +20,10 @@
 	I just reached the idea that the sheet is not the same as the document,
 	therefore a document can have multiple sheets on it, which is gonna
 	make this thing even harder.
+
+	Once i parsed the arguments using getopt, the next step would be to
+	draw the tui... I found a way to displat the row numbers faster!
+	we cannot allow ourselves to print every single row number by its
+	own printf call, instead since there's a fixed number of rows, we're
+	gonna hardcode all row numbers into an array and then display just
+	the needed number of rows by a single printf call.

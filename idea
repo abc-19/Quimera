@@ -1,6 +1,8 @@
 
 	Quimera - whole idea
 
+	01 Jan 2025
+	~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	The idea is to implement a spreadsheet engine which will allow me to
 	learn several things about software develpment, this is a really hard
 	projects based on all the things it envolves...
@@ -21,9 +23,24 @@
 	therefore a document can have multiple sheets on it, which is gonna
 	make this thing even harder.
 
+	02 Jan 2025
+	~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	Once i parsed the arguments using getopt, the next step would be to
 	draw the tui... I found a way to displat the row numbers faster!
 	we cannot allow ourselves to print every single row number by its
 	own printf call, instead since there's a fixed number of rows, we're
 	gonna hardcode all row numbers into an array and then display just
-	the needed number of rows by a single printf call.
+	the needed number of rows by a single printf call. Ok!!! we just
+	implemented the layout (row numbers) and (column names), this was
+	done by storing all the numbers and names into a unique string, therefore
+	by giving an offset it will print what fits into the screen, this
+	way makes it faster since it's a unique print instead of N prints.
+
+	I am thinking about storing the whole sheet into a file and then render
+	the file but i am not pretty sure about that one, the next step 
+	01. Go around
+	02. Bounds detection
+	03. Render new sections as the user moves
+	04. Adjust column's width
+
+	there are a lot of things to do, but so fat i think about those...

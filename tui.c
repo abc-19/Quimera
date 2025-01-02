@@ -10,10 +10,15 @@
 #include <sys/ioctl.h>
 #include <assert.h>
 
+#define	COLWIDTH	10
+#define	MARGINBTS	7
+
 static u16_t	_winRows_bytes, _winCols_bytes;
 
 static void getWinSize (void);
 static void updateRowNumbers (const u16_t);
+
+static void updateColNames (const u16_t);
 
 void tui__drawLayout ()
 {
@@ -21,6 +26,7 @@ void tui__drawLayout ()
 	getWinSize();
 
 	updateRowNumbers(0);
+	updateColNames(0);
 }
 
 static void getWinSize (void)
@@ -53,6 +59,26 @@ static void updateRowNumbers (const u16_t from)
 	" 120 \n"" 121 \n"" 122 \n"" 123 \n";
 
 	static const u8_t width = 6, rowsAlreadyUsed = 4;
+
 	printf("\x1b[4;0H%.*s", width * (_winRows_bytes - rowsAlreadyUsed), nums + (width * from));
+	fflush(stdout);
 }
 
+static void updateColNames (const u16_t from)
+{
+	static const char *const names =
+	"    A         B         C         D         E         F         G     "
+	"    H         I         J         K         L         M         N     "
+	"    O         P         Q         R         S         T         U     "
+	"    V         W         X         Y         Z         AA        AB    "
+	"    AC        AD        AE        AF        AG        AH        AI    "
+	"    AJ        AK        AL        AM        AN        AO        AP    "
+	"    AQ        AR        AS        AT        AU        AV        AW    "
+	"    AX        AY        AZ        BA        BB        BC        BD    "
+	"    BE        BF        BG        BH        BI        BJ        BK    "
+	"    BL        BM        BN        BO        BP        BQ        BR    "
+	"    BS        BT        BU        BV        BW        BX        BY        BZ    ";
+
+	printf("\x1b[3;0H      %.*s", _winCols_bytes - MARGINBTS, names + (COLWIDTH * from));
+	fflush(stdout);
+}

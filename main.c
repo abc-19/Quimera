@@ -119,7 +119,6 @@ static void start (struct Quimera *const quim)
 	}
 
 	turnxxCanonical(T_ON);
-	printf("\x1b[H\x1b[J");
 }
 
 static void turnxxCanonical (const u8_t mode)
@@ -128,7 +127,7 @@ static void turnxxCanonical (const u8_t mode)
 	tcgetattr(FD_SIN, &stts);
 
 	switch (mode) {
-		case T_OFF: stts.c_lflag &= ~(ICANON & ECHO); break;
+		case T_OFF: stts.c_lflag &= ~(ICANON | ECHO); break;
 		case T_ON : stts.c_lflag |= (ICANON  | ECHO); break;
 	}
 

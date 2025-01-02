@@ -9,23 +9,38 @@
 #include "quimera.h"
 #include "tui.h"
 
+#include <err.h>
 #include <getopt.h>
+#include <signal.h>
 #include <stdlib.h>
 #include <string.h>
-#include <err.h>
+#include <unistd.h>
+#include <termios.h>
+
+#define	T_ON	1
+#define	T_OFF	0
 
 static void parseArguments (const int, char**, struct Quimera *const);
 static void printUsage (const char *const);
+
+static void setUpSignals (void);
+static void signalHandler (const i32_t);
+
+static void start (struct Quimera *const);
+static void turnxxCanonical (const u8_t);
 
 int main (int argc, char **argv)
 {
 	struct Quimera quim;
 	memset(&quim, 0, sizeof(quim));
 
+	setUpSignals();
+
 	parseArguments(argc, argv, &quim);
 	tui__drawLayout();
 
-	scanf("%d", &argc);
+	start(&quim);
+
 	return 0;
 }
 
@@ -56,4 +71,66 @@ static void printUsage (const char *const as)
 
 	fprintf(stderr, usage, __DATE__, __TIME__, as, as);
 	exit(0);
+}
+
+static void setUpSignals (void)
+{
+	struct sigaction sa;
+	sa.sa_handler = signalHandler;
+	sa.sa_flags = 0;
+
+	sigaction(SIGINT,	&sa, NULL);
+	sigaction(SIGQUIT,	&sa, NULL);
+	sigaction(SIGTERM,	&sa, NULL);
+
+	sigaction(SIGCONT,	&sa, NULL);
+	sigaction(SIGTSTP,	&sa, NULL);
+
+	sigaction(SIGHUP,	&sa, NULL);
+	sigaction(SIGWINCH,	&sa, NULL);
+}
+
+static void signalHandler (const i32_t sig)
+{
+	switch (sig) {
+		case SIGINT:
+		case SIGQUIT:
+		case SIGTERM:
+		case SIGHUP:
+			break;
+		case SIGCONT:
+			break;
+		case SIGTSTP:
+			break;
+		case SIGWINCH:
+			tui__drawLayout();
+			break;
+	}
+}
+
+static void start (struct Quimera *const quim)
+{
+	turnxxCanonical(T_OFF);
+
+	char a;
+	while (1) {
+		read(0, &a, 1);
+		if (a == 'q') break;
+	}
+
+	turnxxCanonical(T_ON);
+	printf("\x1b[H\x1b[J");
+}
+
+static void turnxxCanonical (const u8_t mode)
+{
+	struct termios stts;
+	tcgetattr(FD_SIN, &stts);
+
+	switch (mode) {
+		case T_OFF: stts.c_lflag &= ~(ICANON & ECHO); break;
+		case T_ON : stts.c_lflag |= (ICANON  | ECHO); break;
+	}
+
+	tcsetattr(FD_SIN, TCSANOW, &stts);
 }

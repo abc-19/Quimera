@@ -33,8 +33,10 @@
 #define	FD_SOUT		1
 #define	FD_SERR		2
 
-#define	MaxColumns	78
+#define	MaxCols		78
 #define	MaxRows		124
+
+#define	DEBUG_P(s, ...)	fprintf(stderr, s, __VA_ARGS__)
 
 struct Sheet
 {
@@ -44,6 +46,7 @@ struct Sheet
 struct Quimera
 {
 	struct	Sheet *currSheet;
+	u16_t	row_p, col_p;
 	char	*docName;
 	bool_t	readOnly;
 };

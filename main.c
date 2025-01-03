@@ -20,6 +20,8 @@
 #define	T_ON	1
 #define	T_OFF	0
 
+#define	BUFSZ	4
+
 static void parseArguments (const int, char**, struct Quimera *const);
 static void printUsage (const char *const);
 
@@ -28,6 +30,8 @@ static void signalHandler (const i32_t);
 
 static void start (struct Quimera *const);
 static void turnxxCanonical (const u8_t);
+
+static void moveTowards (const char, u16_t*, u16_t*);
 
 int main (int argc, char **argv)
 {
@@ -111,14 +115,22 @@ static void signalHandler (const i32_t sig)
 static void start (struct Quimera *const quim)
 {
 	turnxxCanonical(T_OFF);
+	char buff[BUFSZ] = {0};
 
-	char a;
 	while (1) {
-		read(0, &a, 1);
-		if (a == 'q') break;
+		read(FD_SIN, buff, BUFSZ);
+
+		if (*buff == 0x1b && buff[1] == '[') {
+			moveTowards(buff[2], &quim->row_p, &quim->col_p);
+			tui__moveCursor(quim->row_p, quim->col_p, "here!");
+			DEBUG_P("%d %d %d\n", quim->row_p, quim->col_p, buff[2]);
+		}
+
+		if (*buff == '1') break;
 	}
 
 	turnxxCanonical(T_ON);
+	printf("\x1b[H\x1b[J\x1b[?25h");
 }
 
 static void turnxxCanonical (const u8_t mode)
@@ -132,4 +144,15 @@ static void turnxxCanonical (const u8_t mode)
 	}
 
 	tcsetattr(FD_SIN, TCSANOW, &stts);
+}
+
+static void moveTowards (const char towards, u16_t *row, u16_t *col)
+{
+	// TODO: implement warning messages
+	switch (towards) {
+		case 'A': { *row -= (*row) ? 1 : 0; break; }
+		case 'D': { *col -= (*col) ? 1 : 0; break; }
+		case 'B': { *row += ((*row + 1) == MaxRows) ? 0 : 1; break; }
+		case 'C': { *col += ((*col + 1) == MaxCols) ? 0 : 1; break; }
+	}
 }

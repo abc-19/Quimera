@@ -22,11 +22,32 @@ static void updateColNames (const u16_t);
 
 void tui__drawLayout ()
 {
-	printf("\x1b[H\x1b[J");
+	printf("\x1b[H\x1b[J\x1b[?25l");
 	getWinSize();
 
 	updateRowNumbers(0);
 	updateColNames(0);
+
+
+	tui__moveCursor(0, 0, "this");
+}
+
+void tui__moveCursor (const u16_t row, const u16_t col, const char *const src)
+{
+	static u16_t oldRow, oldCol;
+	static char *oldSrc = NULL;
+
+	static const u16_t rowOffset = 4, colOffset = 6;
+
+	if (oldSrc)
+		printf("\x1b[%d;%dH\x1b[0m%-*s", rowOffset + oldRow, colOffset + oldCol * COLWIDTH, COLWIDTH, oldSrc);
+
+	printf("\x1b[%d;%dH\x1b[48;5;106m%-*s\x1b[0m", rowOffset + row, colOffset + col * COLWIDTH, COLWIDTH, src);
+	fflush(stdout);
+
+	oldRow = row;
+	oldCol = col;
+	oldSrc = (char*) src;
 }
 
 static void getWinSize (void)
@@ -82,3 +103,4 @@ static void updateColNames (const u16_t from)
 	printf("\x1b[3;0H      %.*s", _winCols_bytes - MARGINBTS, names + (COLWIDTH * from));
 	fflush(stdout);
 }
+

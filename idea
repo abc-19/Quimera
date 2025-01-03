@@ -40,9 +40,18 @@
 	the file but i am not pretty sure about that one, the next step 
 	01. Go around										[done]
 	02. Bounds detection								[done]
-	03. Render new sections as the user moves
+	03. Render new sections as the user moves			[done]
 	04. Adjust column's width
 
 	there are a lot of things to do, but so fat i think about those...
 	I just implemented moving around, i am so happy right now, now i will
 	make the coder cleaner since it's too verbose somehow.
+
+	03 Jan 2025
+	~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	We just got the 'Rder new sections as the user moves' done, however the code
+	is a little bit complex, we want to make it simpler, i just did it using a function
+	to avoid writing the same code twice, i also want to re-struct all the code based
+	on making the main structure global for easier access to the data instead of passing
+	arguments to functions which has to pass that argument to another function and so
+	on.

@@ -47,6 +47,7 @@ static void getWinSize (void);
 static void updtRowNumsView (const u16_t);
 
 static void updtColNamesView (const u16_t);
+static void compareCurrVsOld (const u16_t, const u16_t, const u16_t, i16_t*, i16_t*, void (*updater)(const u16_t));
 
 void tui__drawLayout ()
 {
@@ -66,24 +67,11 @@ void tui__drawLayout ()
 void tui__moveCursor (const u16_t rowPos, const u16_t colPos, const char *const src)
 {
 	static u16_t putxat_old, putyat_old, oldCol = 0, oldRow = 0;
+	static i16_t relCol = 0, updtCol = 0, relRow = 0, updtRow = 0;
 	static char *src_old = NULL;
 
-	static i16_t relCol = 0, updtCol = 0;
-	static i16_t relRow = 0, updtRow = 0;
-
-
-	if (rowPos > oldRow) relRow++;
-	if (rowPos < oldRow) relRow--;
-
-	if (relRow == nRows_) { updtRowNumsView(++updtRow); relRow = nRows_ - 1; }
-	if (relRow == -1) { updtRowNumsView(--updtRow); relRow = 0; }
-
-
-	if (colPos > oldCol) relCol += 1;
-	if (colPos < oldCol) relCol -= 1;
-
-	if (relCol == nCols_) { updtColNamesView(++updtCol); relCol = nCols_ - 1; }
-	if (relCol == -1) { updtColNamesView(--updtCol); relCol = 0; }
+	compareCurrVsOld(rowPos, oldRow, nRows_, &relRow, &updtRow, updtRowNumsView);
+	compareCurrVsOld(colPos, oldCol, nCols_, &relCol, &updtCol, updtColNamesView);
 
 	const u16_t putxat = LEFTMARGIN_ + relCol * COLWIDTH_;
 	const u16_t putyat = ROWSALRDUSED_ + relRow;
@@ -150,12 +138,28 @@ static void updtColNamesView (const u16_t from)
 	"    AX        AY        AZ        BA        BB        BC        BD    "
 	"    BE        BF        BG        BH        BI        BJ        BK    "
 	"    BL        BM        BN        BO        BP        BQ        BR    "
-	"    BS        BT        BU        BV        BW        BX        BY        BZ    ";
+	"    BS        BT        BU        BV        BW        BX        BY        BZ    ...";
 
 	const u16_t ncols2print = WHBytes_ - LEFTMARGIN_;
 	const char *cols = names + (COLWIDTH_ * from);
 
-	printf("\x1b[3;0H     %.*s", ncols2print, cols);
+	printf("\x1b[3;0H     %.*s\x1b[0K", ncols2print, cols);
 	fflush(stdout);
 }
 
+static void compareCurrVsOld (const u16_t curr, const u16_t old, const u16_t lim, i16_t *rel, i16_t *updtn, void (*updater)(const u16_t))
+{
+	if (curr > old) *rel += 1;
+	if (curr < old) *rel -= 1;
+
+	if (*rel == lim) {
+		*updtn += 1;
+		updater(*updtn);
+		*rel = lim - 1;
+	}
+	if (*rel == -1) {
+		*updtn -= 1;
+		updater(*updtn);
+		*rel = 0;
+	}
+}

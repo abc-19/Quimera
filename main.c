@@ -47,7 +47,7 @@ int main (int argc, char **argv)
 	setUpSignals();
 
 	parseExecArgs(argc, argv, &quim);
-	tui__drawLayout();
+	tui__drawLayout(quim.rowPos, quim.colPos);
 
 	startInteractions(&quim);
 
@@ -113,7 +113,7 @@ static void signalHandler (const i32_t sig)
 		case SIGTSTP:
 			break;
 		case SIGWINCH:
-			tui__drawLayout();
+			fprintf(stderr, "No supported yet\n");
 			break;
 	}
 }

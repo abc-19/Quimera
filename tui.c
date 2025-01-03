@@ -49,6 +49,8 @@ static void updtRowNumsView (const u16_t);
 static void updtColNamesView (const u16_t);
 static void compareCurrVsOld (const u16_t, const u16_t, const u16_t, i16_t*, i16_t*, void (*updater)(const u16_t));
 
+static void updtPosTxt (const u16_t, const u16_t);
+
 void tui__drawLayout ()
 {
 	printf("\x1b[H\x1b[J\x1b[?25l");
@@ -68,7 +70,9 @@ void tui__moveCursor (const u16_t rowPos, const u16_t colPos, const char *const 
 {
 	static u16_t putxat_old, putyat_old, oldCol = 0, oldRow = 0;
 	static i16_t relCol = 0, updtCol = 0, relRow = 0, updtRow = 0;
+
 	static char *src_old = NULL;
+	updtPosTxt(rowPos, colPos);
 
 	compareCurrVsOld(rowPos, oldRow, nRows_, &relRow, &updtRow, updtRowNumsView);
 	compareCurrVsOld(colPos, oldCol, nCols_, &relCol, &updtCol, updtColNamesView);
@@ -162,4 +166,15 @@ static void compareCurrVsOld (const u16_t curr, const u16_t old, const u16_t lim
 		updater(*updtn);
 		*rel = 0;
 	}
+}
+
+static void updtPosTxt (const u16_t row, const u16_t col)
+{
+	char colName[3] = {0, 0, 0};
+
+	if (col < 26) { colName[0] = 'A' + col; }
+	else if (col < 52) { colName[0] = 'A'; colName[1] = 'A' + (col - 26); }
+	else if (col < 78) { colName[0] = 'B'; colName[1] = 'A' + (col - 52); }
+
+	printf("\x1b[0;0H\x1b[0K%s%d", colName, row);
 }

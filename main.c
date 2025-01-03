@@ -132,6 +132,7 @@ static void startInteractions (struct Quimera *const quim)
 			tui__moveCursor(quim->rowPos, quim->colPos, "          ");
 		}
 
+		if (*buff == ':') break;
 		if (*buff == '1') break;
 	}
 

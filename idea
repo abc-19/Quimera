@@ -57,7 +57,5 @@
 	on or at least i'd like to find a way to not repeat myself over and over again
 
 	Next things to implement
-	01. Display current position
-	02. Adjust column's width
-	03. Test everything until that point
-
+	01. Display current position						[done]
+	02. Display sheet name								[done]

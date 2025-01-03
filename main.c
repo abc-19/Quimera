@@ -48,6 +48,7 @@ int main (int argc, char **argv)
 	parseExecArgs(argc, argv, &quim);
 	tui__drawLayout(quim.rowPos, quim.colPos);
 
+	tui__updateSheetName("NoName...............");
 	startInteractions(&quim);
 
 	return 0;

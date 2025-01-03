@@ -13,4 +13,6 @@
 void tui__drawLayout ();
 void tui__moveCursor (const u16_t, const u16_t, const char *const);
 
+void tui__updateSheetName (const char*);
+
 #endif

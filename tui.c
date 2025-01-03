@@ -93,6 +93,12 @@ void tui__moveCursor (const u16_t rowPos, const u16_t colPos, const char *const 
 	src_old    = (char*) src;
 }
 
+void tui__updateSheetName (const char *name)
+{
+	printf("\x1b[%d;0H[%-10.5s]", WVBytes_, name);
+	fflush(stdout);
+}
+
 static void getWinSize (void)
 {
 	struct winsize wsz;
@@ -172,9 +178,9 @@ static void updtPosTxt (const u16_t row, const u16_t col)
 {
 	char colName[3] = {0, 0, 0};
 
-	if (col < 26) { colName[0] = 'A' + col; }
-	else if (col < 52) { colName[0] = 'A'; colName[1] = 'A' + (col - 26); }
-	else if (col < 78) { colName[0] = 'B'; colName[1] = 'A' + (col - 52); }
+	if (col < 26)		{ colName[0] = 'A' + col; }
+	else if (col < 52)	{ colName[0] = 'A'; colName[1] = 'A' + (col - 26); }
+	else if (col < 78)	{ colName[0] = 'B'; colName[1] = 'A' + (col - 52); }
 
 	printf("\x1b[0;0H\x1b[0K%s%d", colName, row);
 }

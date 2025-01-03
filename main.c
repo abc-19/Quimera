@@ -18,6 +18,7 @@
 #include <termios.h>
 
 #define	BUFINP_			4
+#define	MOTIONKEY(k)	((k == 'h') || (k == 'j') || (k == 'k') || (k == 'l'))
 
 #define	MAXCOLS_		78
 #define	MAXROWS_		124
@@ -126,8 +127,8 @@ static void startInteractions (struct Quimera *const quim)
 	while (1) {
 		read(FD_SIN, buff, BUFINP_);
 
-		if (*buff == 0x1b && buff[1] == '[') {
-			checkMotion(buff[2], &quim->rowPos, &quim->colPos);
+		if (MOTIONKEY(*buff)) {
+			checkMotion(*buff, &quim->rowPos, &quim->colPos);
 			tui__moveCursor(quim->rowPos, quim->colPos, "          ");
 		}
 
@@ -155,9 +156,9 @@ static void checkMotion (const char towards, u16_t *row, u16_t *col)
 {
 	// TODO: implement warning messages
 	switch (towards) {
-		case 'A': { *row -= (*row) ? 1 : 0; break; }
-		case 'D': { *col -= (*col) ? 1 : 0; break; }
-		case 'B': { *row += ((*row + 1) == MAXROWS_) ? 0 : 1; break; }
-		case 'C': { *col += ((*col + 1) == MAXCOLS_) ? 0 : 1; break; }
+		case 'k': { *row -= (*row) ? 1 : 0; break; }
+		case 'h': { *col -= (*col) ? 1 : 0; break; }
+		case 'j': { *row += ((*row + 1) == MAXROWS_) ? 0 : 1; break; }
+		case 'l': { *col += ((*col + 1) == MAXCOLS_) ? 0 : 1; break; }
 	}
 }

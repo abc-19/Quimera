@@ -8,46 +8,69 @@
  */
 #include "tui.h"
 #include <sys/ioctl.h>
-#include <assert.h>
 
-#define	COLWIDTH	10
-#define	MARGINBTS	7
+/* 
+ * +---------------------------------+
+ * A0	fx: some text				 +	row used (1)
+ * cmd:			 					 +	row used (2)
+ * 		A		B		C		D	 +	row used (3)
+ * 0	39							 +	This is the first row for cells (4th one).
+ * 1								 +
+ * 2								 +
+ * 3								 +
+ * "sheet-name"						 +	row used (4)
+ * ----------------------------------+
+ *
+ * ROWSALRDUSED_: refers to the number of rows
+ * where information is usted to display information
+ * instead of cells
+ *
+ * LEFTMARGIN_: Refers to the number of bytes used to display
+ * the column of row numbers plus 1, since the width of such
+ * column is 5 bytes but we need to start writing from 6th.
+ * */
+#define	LEFTMARGIN_		6
+#define	ROWSALRDUSED_	4
 
-static u16_t	_winRows_bytes, _winCols_bytes;
+#define	COLWIDTH_		10
+#define	MARGINBTS_		7
+
+/* Number of bytes available in the current screen. */
+static u16_t wRowb_, wColb_;
 
 static void getWinSize (void);
-static void updateRowNumbers (const u16_t);
+static void updtRowNumsView (const u16_t);
 
-static void updateColNames (const u16_t);
+static void updtColNamesView (const u16_t);
 
 void tui__drawLayout ()
 {
 	printf("\x1b[H\x1b[J\x1b[?25l");
 	getWinSize();
 
-	updateRowNumbers(0);
-	updateColNames(0);
+	updtRowNumsView(0);
+	updtColNamesView(0);
 
-
-	tui__moveCursor(0, 0, "this");
+	tui__moveCursor(0, 0, "1234567890");
 }
 
 void tui__moveCursor (const u16_t row, const u16_t col, const char *const src)
 {
-	static u16_t oldRow, oldCol;
-	static char *oldSrc = NULL;
+	static u16_t putxat_old, putyat_old;
+	static char *src_old = NULL;
 
-	static const u16_t rowOffset = 4, colOffset = 6;
+	const u16_t putxat = LEFTMARGIN_ + col * COLWIDTH_;
+	const u16_t putyat = ROWSALRDUSED_ + row;
 
-	if (oldSrc)
-		printf("\x1b[%d;%dH\x1b[0m%-*s", rowOffset + oldRow, colOffset + oldCol * COLWIDTH, COLWIDTH, oldSrc);
+	if (src_old)
+	{ printf("\x1b[%d;%dH\x1b[0m%-*s", putyat_old, putxat_old, COLWIDTH_, src_old); }
 
-	printf("\x1b[%d;%dH\x1b[48;5;106m%-*s\x1b[0m", rowOffset + row, colOffset + col * COLWIDTH, COLWIDTH, src);
+	printf("\x1b[%d;%dH\x1b[48;5;106m%-*s\x1b[0m", putyat, putxat, COLWIDTH_, src);
 	fflush(stdout);
 
-	oldRow = row;
-	oldCol = col;
-	oldSrc = (char*) src;
+	putyat_old = putyat;
+	putxat_old = putxat;
+	src_old = (char*) src;
 }
 
 static void getWinSize (void)
@@ -55,11 +78,11 @@ static void getWinSize (void)
 	struct winsize wsz;
 	ioctl(FD_SIN, TIOCGWINSZ, &wsz);
 
-	_winRows_bytes = wsz.ws_row;
-	_winCols_bytes = wsz.ws_col;
+	wRowb_ = wsz.ws_row;
+	wColb_ = wsz.ws_col;
 }
 
-static void updateRowNumbers (const u16_t from)
+static void updtRowNumsView (const u16_t from)
 {
 	static const char *const nums =
 	" 0   \n"" 1   \n"" 2   \n"" 3   \n"" 4   \n"" 5   \n"" 6   \n"" 7   \n"
@@ -79,13 +102,14 @@ static void updateRowNumbers (const u16_t from)
 	" 112 \n"" 113 \n"" 114 \n"" 115 \n"" 116 \n"" 117 \n"" 118 \n"" 119 \n"
 	" 120 \n"" 121 \n"" 122 \n"" 123 \n";
 
-	static const u8_t width = 6, rowsAlreadyUsed = 4;
+	const u16_t nrows2print = LEFTMARGIN_ * (wRowb_ - ROWSALRDUSED_);
+	const char *rows = nums + (LEFTMARGIN_ * from);
 
-	printf("\x1b[4;0H%.*s", width * (_winRows_bytes - rowsAlreadyUsed), nums + (width * from));
+	printf("\x1b[4;0H%.*s", nrows2print, rows);
 	fflush(stdout);
 }
 
-static void updateColNames (const u16_t from)
+static void updtColNamesView (const u16_t from)
 {
 	static const char *const names =
 	"    A         B         C         D         E         F         G     "
@@ -100,7 +124,10 @@ static void updateColNames (const u16_t from)
 	"    BL        BM        BN        BO        BP        BQ        BR    "
 	"    BS        BT        BU        BV        BW        BX        BY        BZ    ";
 
-	printf("\x1b[3;0H      %.*s", _winCols_bytes - MARGINBTS, names + (COLWIDTH * from));
+	const u16_t ncols2print = wColb_ - LEFTMARGIN_;
+	const char *cols = names + (COLWIDTH_ * from);
+
+	printf("\x1b[3;0H     %.*s", ncols2print, cols);
 	fflush(stdout);
 }
 

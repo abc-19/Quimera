@@ -17,21 +17,27 @@
 #include <unistd.h>
 #include <termios.h>
 
-#define	T_ON	1
-#define	T_OFF	0
+#define	BUFINP_			4
 
-#define	BUFSZ	4
+#define	MAXCOLS_		78
+#define	MAXROWS_		124
 
-static void parseArguments (const int, char**, struct Quimera *const);
-static void printUsage (const char *const);
+enum TurnxMode
+{
+	TurnOn	= 1,
+	TurnOff	= 2
+};
+
+static void parseExecArgs (const int, char**, struct Quimera *const);
+static void showUsage (const char *const);
 
 static void setUpSignals (void);
 static void signalHandler (const i32_t);
 
-static void start (struct Quimera *const);
-static void turnxxCanonical (const u8_t);
+static void startInteractions (struct Quimera *const);
+static void turnxxCanonical (const enum TurnxMode);
 
-static void moveTowards (const char, u16_t*, u16_t*);
+static void checkMotion (const char, u16_t*, u16_t*);
 
 int main (int argc, char **argv)
 {
@@ -40,29 +46,29 @@ int main (int argc, char **argv)
 
 	setUpSignals();
 
-	parseArguments(argc, argv, &quim);
+	parseExecArgs(argc, argv, &quim);
 	tui__drawLayout();
 
-	start(&quim);
+	startInteractions(&quim);
 
 	return 0;
 }
 
-static void parseArguments (const int nargs, char **vargs, struct Quimera *const quim) 
+static void parseExecArgs (const int nargs, char **vargs, struct Quimera *const quim) 
 {
 	i32_t op;
 	while ((op = getopt(nargs, vargs, ":s:Ru")) != -1) {
 		switch (op) {
 			case 's': quim->docName = optarg; break;
 			case 'R': quim->readOnly = True; break;
-			case 'u': printUsage(*vargs); break;
+			case 'u': showUsage(*vargs); break;
 			case ':': errx(-1, "[args]: The `-%c` needs an additional argument.", optopt); break;
 			case '?': errx(-1, "[args]: The '-%c' is not a quimera argument.", optopt); break;
 		}
 	}
 }
 
-static void printUsage (const char *const as)
+static void showUsage (const char *const as)
 {
 	static const char *const usage =
 		"Quimera 02 Jan 2025 - %s %s\n"
@@ -112,47 +118,46 @@ static void signalHandler (const i32_t sig)
 	}
 }
 
-static void start (struct Quimera *const quim)
+static void startInteractions (struct Quimera *const quim)
 {
-	turnxxCanonical(T_OFF);
-	char buff[BUFSZ] = {0};
+	turnxxCanonical(TurnOff);
+	char buff[BUFINP_] = {0};
 
 	while (1) {
-		read(FD_SIN, buff, BUFSZ);
+		read(FD_SIN, buff, BUFINP_);
 
 		if (*buff == 0x1b && buff[1] == '[') {
-			moveTowards(buff[2], &quim->row_p, &quim->col_p);
+			checkMotion(buff[2], &quim->row_p, &quim->col_p);
 			tui__moveCursor(quim->row_p, quim->col_p, "here!");
-			DEBUG_P("%d %d %d\n", quim->row_p, quim->col_p, buff[2]);
 		}
 
 		if (*buff == '1') break;
 	}
 
-	turnxxCanonical(T_ON);
+	turnxxCanonical(TurnOn);
 	printf("\x1b[H\x1b[J\x1b[?25h");
 }
 
-static void turnxxCanonical (const u8_t mode)
+static void turnxxCanonical (const enum TurnxMode mode)
 {
 	struct termios stts;
 	tcgetattr(FD_SIN, &stts);
 
 	switch (mode) {
-		case T_OFF: stts.c_lflag &= ~(ICANON | ECHO); break;
-		case T_ON : stts.c_lflag |= (ICANON  | ECHO); break;
+		case TurnOff: stts.c_lflag &= ~(ICANON | ECHO); break;
+		case TurnOn : stts.c_lflag |= (ICANON  | ECHO); break;
 	}
 
 	tcsetattr(FD_SIN, TCSANOW, &stts);
 }
 
-static void moveTowards (const char towards, u16_t *row, u16_t *col)
+static void checkMotion (const char towards, u16_t *row, u16_t *col)
 {
 	// TODO: implement warning messages
 	switch (towards) {
 		case 'A': { *row -= (*row) ? 1 : 0; break; }
 		case 'D': { *col -= (*col) ? 1 : 0; break; }
-		case 'B': { *row += ((*row + 1) == MaxRows) ? 0 : 1; break; }
-		case 'C': { *col += ((*col + 1) == MaxCols) ? 0 : 1; break; }
+		case 'B': { *row += ((*row + 1) == MAXROWS_) ? 0 : 1; break; }
+		case 'C': { *col += ((*col + 1) == MAXCOLS_) ? 0 : 1; break; }
 	}
 }

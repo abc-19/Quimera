@@ -33,10 +33,15 @@
 #define	ROWSALRDUSED_	4
 
 #define	COLWIDTH_		10
-#define	MARGINBTS_		7
 
-/* Number of bytes available in the current screen. */
-static u16_t wRowb_, wColb_;
+/* Number of vertical bytes (lines) and number
+ * of horizonta byrtes (columns) available in
+ * the current view. */
+static u16_t WVBytes_, WHBytes_;
+
+/* Number of columns and rows available for
+ * the user to see and go throught. */
+static u16_t nRows_, nCols_;
 
 static void getWinSize (void);
 static void updtRowNumsView (const u16_t);
@@ -48,19 +53,33 @@ void tui__drawLayout ()
 	printf("\x1b[H\x1b[J\x1b[?25l");
 	getWinSize();
 
+	// TODO: adjust to personalizated column width
+	nRows_ = WVBytes_ - ROWSALRDUSED_;
+	nCols_ = (WHBytes_ - LEFTMARGIN_) / COLWIDTH_;
+
 	updtRowNumsView(0);
 	updtColNamesView(0);
 
-	tui__moveCursor(0, 0, "1234567890");
+	tui__moveCursor(0, 0, "          ");
 }
 
-void tui__moveCursor (const u16_t row, const u16_t col, const char *const src)
+void tui__moveCursor (u16_t rowPos, u16_t colPos, const char *const src)
 {
 	static u16_t putxat_old, putyat_old;
 	static char *src_old = NULL;
 
-	const u16_t putxat = LEFTMARGIN_ + col * COLWIDTH_;
-	const u16_t putyat = ROWSALRDUSED_ + row;
+	if (colPos >= nCols_) {
+		updtColNamesView(colPos - nCols_);
+		colPos = nCols_ - 1;
+	}
+
+	if (rowPos >= nRows_) {
+		updtRowNumsView(rowPos - nRows_);
+		rowPos = nRows_ - 1;
+	}
+
+	const u16_t putxat = LEFTMARGIN_ + colPos * COLWIDTH_;
+	const u16_t putyat = ROWSALRDUSED_ + rowPos;
 
 	if (src_old)
 	{ printf("\x1b[%d;%dH\x1b[0m%-*s", putyat_old, putxat_old, COLWIDTH_, src_old); }
@@ -78,8 +97,8 @@ static void getWinSize (void)
 	struct winsize wsz;
 	ioctl(FD_SIN, TIOCGWINSZ, &wsz);
 
-	wRowb_ = wsz.ws_row;
-	wColb_ = wsz.ws_col;
+	WVBytes_ = wsz.ws_row;
+	WHBytes_ = wsz.ws_col;
 }
 
 static void updtRowNumsView (const u16_t from)
@@ -102,7 +121,7 @@ static void updtRowNumsView (const u16_t from)
 	" 112 \n"" 113 \n"" 114 \n"" 115 \n"" 116 \n"" 117 \n"" 118 \n"" 119 \n"
 	" 120 \n"" 121 \n"" 122 \n"" 123 \n";
 
-	const u16_t nrows2print = LEFTMARGIN_ * (wRowb_ - ROWSALRDUSED_);
+	const u16_t nrows2print = LEFTMARGIN_ * (WVBytes_ - ROWSALRDUSED_);
 	const char *rows = nums + (LEFTMARGIN_ * from);
 
 	printf("\x1b[4;0H%.*s", nrows2print, rows);
@@ -124,7 +143,7 @@ static void updtColNamesView (const u16_t from)
 	"    BL        BM        BN        BO        BP        BQ        BR    "
 	"    BS        BT        BU        BV        BW        BX        BY        BZ    ";
 
-	const u16_t ncols2print = wColb_ - LEFTMARGIN_;
+	const u16_t ncols2print = WHBytes_ - LEFTMARGIN_;
 	const char *cols = names + (COLWIDTH_ * from);
 
 	printf("\x1b[3;0H     %.*s", ncols2print, cols);

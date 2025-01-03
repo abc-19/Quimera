@@ -43,7 +43,7 @@ struct Sheet
 struct Quimera
 {
 	struct	Sheet *currSheet;
-	u16_t	row_p, col_p;
+	u16_t	rowPos, colPos;
 	char	*docName;
 	bool_t	readOnly;
 };

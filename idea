@@ -39,7 +39,7 @@
 	I am thinking about storing the whole sheet into a file and then render
 	the file but i am not pretty sure about that one, the next step 
 	01. Go around										[done]
-	02. Bounds detection
+	02. Bounds detection								[done]
 	03. Render new sections as the user moves
 	04. Adjust column's width
 

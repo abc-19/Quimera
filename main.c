@@ -127,8 +127,8 @@ static void startInteractions (struct Quimera *const quim)
 		read(FD_SIN, buff, BUFINP_);
 
 		if (*buff == 0x1b && buff[1] == '[') {
-			checkMotion(buff[2], &quim->row_p, &quim->col_p);
-			tui__moveCursor(quim->row_p, quim->col_p, "here!");
+			checkMotion(buff[2], &quim->rowPos, &quim->colPos);
+			tui__moveCursor(quim->rowPos, quim->colPos, "          ");
 		}
 
 		if (*buff == '1') break;

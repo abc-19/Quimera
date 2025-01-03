@@ -11,6 +11,6 @@
 #include "quimera.h"
 
 void tui__drawLayout ();
-void tui__moveCursor (u16_t, u16_t, const char *const);
+void tui__moveCursor (const u16_t, const u16_t, const char *const);
 
 #endif

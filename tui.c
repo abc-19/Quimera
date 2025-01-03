@@ -63,23 +63,30 @@ void tui__drawLayout ()
 	tui__moveCursor(0, 0, "          ");
 }
 
-void tui__moveCursor (u16_t rowPos, u16_t colPos, const char *const src)
+void tui__moveCursor (const u16_t rowPos, const u16_t colPos, const char *const src)
 {
-	static u16_t putxat_old, putyat_old;
+	static u16_t putxat_old, putyat_old, oldCol = 0, oldRow = 0;
 	static char *src_old = NULL;
 
-	if (colPos >= nCols_) {
-		updtColNamesView(colPos - nCols_);
-		colPos = nCols_ - 1;
-	}
+	static i16_t relCol = 0, updtCol = 0;
+	static i16_t relRow = 0, updtRow = 0;
 
-	if (rowPos >= nRows_) {
-		updtRowNumsView(rowPos - nRows_);
-		rowPos = nRows_ - 1;
-	}
 
-	const u16_t putxat = LEFTMARGIN_ + colPos * COLWIDTH_;
-	const u16_t putyat = ROWSALRDUSED_ + rowPos;
+	if (rowPos > oldRow) relRow++;
+	if (rowPos < oldRow) relRow--;
+
+	if (relRow == nRows_) { updtRowNumsView(++updtRow); relRow = nRows_ - 1; }
+	if (relRow == -1) { updtRowNumsView(--updtRow); relRow = 0; }
+
+
+	if (colPos > oldCol) relCol += 1;
+	if (colPos < oldCol) relCol -= 1;
+
+	if (relCol == nCols_) { updtColNamesView(++updtCol); relCol = nCols_ - 1; }
+	if (relCol == -1) { updtColNamesView(--updtCol); relCol = 0; }
+
+	const u16_t putxat = LEFTMARGIN_ + relCol * COLWIDTH_;
+	const u16_t putyat = ROWSALRDUSED_ + relRow;
 
 	if (src_old)
 	{ printf("\x1b[%d;%dH\x1b[0m%-*s", putyat_old, putxat_old, COLWIDTH_, src_old); }
@@ -89,7 +96,9 @@ void tui__moveCursor (u16_t rowPos, u16_t colPos, const char *const src)
 
 	putyat_old = putyat;
 	putxat_old = putxat;
-	src_old = (char*) src;
+	oldCol     = colPos;
+	oldRow     = rowPos;
+	src_old    = (char*) src;
 }
 
 static void getWinSize (void)
